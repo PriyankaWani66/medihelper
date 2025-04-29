@@ -6,7 +6,8 @@ __pycache__/
 venv/
 
 # ─── Environment files ────────────────────────────
-.env
+backend/.env
+
 
 # ─── Editor / OS junk ────────────────────────────
 *.swp
