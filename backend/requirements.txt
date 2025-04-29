@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+pymupdf
+python-docx
+snowflake-connector-python
+python-multipart
