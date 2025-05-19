@@ -1,9 +1,14 @@
 import os
 import snowflake.connector
 from dotenv import load_dotenv
+import re
 
 # Load environment variables
 load_dotenv()
+
+def clean_summary(text: str) -> str:
+    # Remove bold markdown (e.g., **Summary:** -> Summary:)
+    return re.sub(r"\*\*(.*?)\*\*", r"\1", text)
 
 def summarize_with_snowflake(text: str) -> str:
     """
@@ -21,8 +26,9 @@ def summarize_with_snowflake(text: str) -> str:
 
     try:
         prompt = (
-            "Summarize this clinical note in simple language, "
-            "including follow-up instructions, medications, and risk factors:\n\n"
+            "Summarize this clinical note in simple language without using markdown or asterisks. "
+            "Present the output in plain text with clear section headings like 'Summary:', "
+            "'Medications:', 'Follow-up instructions:', and 'Risk factors:'.\n\n"
             f"{text}"
         )
 
@@ -35,7 +41,8 @@ def summarize_with_snowflake(text: str) -> str:
 
         cursor.execute(query)
         row = cursor.fetchone()
-        return row[0] if row and row[0] else "No summary generated."
+        raw_summary = row[0] if row and row[0] else "No summary generated."
+        return clean_summary(raw_summary)
 
     except Exception as e:
         print(f"Error during summarization: {e}")
