@@ -1,4 +1,3 @@
-// frontend/src/components/SummaryForm.jsx
 import { useState } from "react";
 
 export default function SummaryForm() {
@@ -8,6 +7,8 @@ export default function SummaryForm() {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
 
   const handleTextSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +17,7 @@ export default function SummaryForm() {
     setLoading(true);
     setError("");
     setSummary("");
+    setAnswer("");
 
     try {
       const res = await fetch("/api/summarize-text", {
@@ -41,6 +43,7 @@ export default function SummaryForm() {
     setLoading(true);
     setError("");
     setSummary("");
+    setAnswer("");
 
     try {
       const form = new FormData();
@@ -60,6 +63,24 @@ export default function SummaryForm() {
     }
   };
 
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    setAnswer("Thinking...");
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: summary, question }),
+      });
+      const data = await res.json();
+      setAnswer(data.answer);
+    } catch (err) {
+      console.error(err);
+      setAnswer("Sorry, couldn't answer that.");
+    }
+  };
+
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
       {/* Mode Tabs */}
@@ -70,6 +91,7 @@ export default function SummaryForm() {
             onClick={() => {
               setMode(m);
               setSummary("");
+              setAnswer("");
               setError("");
             }}
             style={{
@@ -113,10 +135,7 @@ export default function SummaryForm() {
 
         <button
           type="submit"
-          disabled={
-            loading ||
-            (mode === "text" ? !note.trim() : !file)
-          }
+          disabled={loading || (mode === "text" ? !note.trim() : !file)}
           style={{
             width: "100%",
             padding: 12,
@@ -138,26 +157,64 @@ export default function SummaryForm() {
 
       {/* Error */}
       {error && (
-        <p style={{ color: "red", marginTop: 12 }}>
-          {error}
-        </p>
+        <p style={{ color: "red", marginTop: 12 }}>{error}</p>
       )}
 
-      {/* Summary */}
+      {/* Summary + Ask Question */}
       {summary && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: 16,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fafafa",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>Summary</h3>
-          {summary}
-        </div>
+        <>
+          <div
+            style={{
+              marginTop: 20,
+              padding: 16,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: "#fafafa",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>Summary</h3>
+            {summary}
+          </div>
+
+          {/* Ask a Question */}
+          <div style={{ marginTop: 20 }}>
+            <input
+              type="text"
+              placeholder="Ask a question about the summary..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              style={{ width: "100%", padding: 8, marginBottom: 8 }}
+              disabled={loading}
+            />
+            <button
+              onClick={handleAsk}
+              disabled={loading || !question.trim()}
+              style={{
+                width: "100%",
+                padding: 10,
+                background: "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: 4,
+              }}
+            >
+              Ask Question
+            </button>
+            {answer && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  background: "#eef",
+                  borderRadius: 4,
+                }}
+              >
+                <strong>Answer:</strong> {answer}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
