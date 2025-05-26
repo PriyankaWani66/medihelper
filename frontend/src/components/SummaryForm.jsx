@@ -8,7 +8,6 @@ export default function SummaryForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
 
   const handleTextSubmit = async (e) => {
@@ -18,7 +17,6 @@ export default function SummaryForm() {
     setLoading(true);
     setError("");
     setSummary("");
-    setAnswer("");
     setChatHistory([]);
 
     try {
@@ -31,7 +29,6 @@ export default function SummaryForm() {
       const data = await res.json();
       setSummary(data.summary);
     } catch (err) {
-      console.error(err);
       setError(err.message || "Unknown error");
     } finally {
       setLoading(false);
@@ -45,7 +42,6 @@ export default function SummaryForm() {
     setLoading(true);
     setError("");
     setSummary("");
-    setAnswer("");
     setChatHistory([]);
 
     try {
@@ -59,7 +55,6 @@ export default function SummaryForm() {
       const data = await res.json();
       setSummary(data.summary);
     } catch (err) {
-      console.error(err);
       setError(err.message || "Unknown error");
     } finally {
       setLoading(false);
@@ -69,7 +64,10 @@ export default function SummaryForm() {
   const handleAsk = async () => {
     if (!question.trim()) return;
 
-    setAnswer("Thinking...");
+    const newChat = { q: question, a: "Thinking..." };
+    setChatHistory((prev) => [...prev, newChat]);
+    setQuestion("");
+
     try {
       const res = await fetch("/api/ask", {
         method: "POST",
@@ -77,19 +75,26 @@ export default function SummaryForm() {
         body: JSON.stringify({ note: summary, question }),
       });
       const data = await res.json();
-      setAnswer(data.answer);
 
-      setChatHistory((prev) => [...prev, { q: question, a: data.answer }]);
-      setQuestion("");
+      setChatHistory((prev) =>
+        prev.map((chat, i) =>
+          i === prev.length - 1 ? { ...chat, a: data.answer } : chat
+        )
+      );
     } catch (err) {
-      console.error(err);
-      setAnswer("Sorry, couldn't answer that.");
+      setChatHistory((prev) =>
+        prev.map((chat, i) =>
+          i === prev.length - 1
+            ? { ...chat, a: "Sorry, couldn't answer that." }
+            : chat
+        )
+      );
     }
   };
 
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      {/* Mode Toggle */}
+      {/* Mode Tabs */}
       <div style={{ display: "flex", marginBottom: 16 }}>
         {["text", "file"].map((m) => (
           <button
@@ -97,7 +102,6 @@ export default function SummaryForm() {
             onClick={() => {
               setMode(m);
               setSummary("");
-              setAnswer("");
               setError("");
               setChatHistory([]);
             }}
@@ -133,12 +137,11 @@ export default function SummaryForm() {
           <input
             type="file"
             accept=".pdf,.txt,.docx"
-            onChange={(e) => setFile(e.target.files && e.target.files[0])}
+            onChange={(e) => setFile(e.target.files?.[0])}
             disabled={loading}
             style={{ marginBottom: 12 }}
           />
         )}
-
         <button
           type="submit"
           disabled={loading || (mode === "text" ? !note.trim() : !file)}
@@ -161,15 +164,12 @@ export default function SummaryForm() {
         </button>
       </form>
 
-      {/* Error Display */}
-      {error && (
-        <p style={{ color: "red", marginTop: 12 }}>{error}</p>
-      )}
+      {/* Error Message */}
+      {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
 
-      {/* Summary and Q&A */}
+      {/* Summary Display */}
       {summary && (
         <>
-          {/* Summary Block */}
           <div
             style={{
               marginTop: 20,
@@ -184,7 +184,7 @@ export default function SummaryForm() {
             {summary}
           </div>
 
-          {/* Ask a Question */}
+          {/* Ask Question */}
           <div style={{ marginTop: 20 }}>
             <input
               type="text"
@@ -208,35 +208,36 @@ export default function SummaryForm() {
             >
               Ask Question
             </button>
-
-            {answer && (
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: 12,
-                  background: "#eef",
-                  borderRadius: 4,
-                }}
-                dangerouslySetInnerHTML={{ __html: `<strong>Answer:</strong> ${answer}` }}
-              />
-            )}
           </div>
 
           {/* Chat History */}
           {chatHistory.length > 0 && (
             <div style={{ marginTop: 24 }}>
-              <h4>🧠 Q&A History</h4>
-              <div style={{ padding: 12, background: "#f9f9f9", borderRadius: 4 }}>
+              <h4>🧠 Q&A Chat</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {chatHistory.map((entry, idx) => (
-                  <div key={idx} style={{ marginBottom: 12 }}>
-                    <p style={{ margin: 0 }}>
-                      <strong>❓ You:</strong> {entry.q}
-                    </p>
+                  <div key={idx} style={{ display: "flex", flexDirection: "column" }}>
                     <div
-                      style={{ margin: "4px 0 0" }}
-                      dangerouslySetInnerHTML={{
-                        __html: `<strong>💬 AI:</strong> ${entry.a}`,
+                      style={{
+                        alignSelf: "flex-end",
+                        background: "#d4edda",
+                        color: "#155724",
+                        padding: 10,
+                        borderRadius: 10,
+                        maxWidth: "90%",
                       }}
+                    >
+                      {entry.q}
+                    </div>
+                    <div
+                      style={{
+                        alignSelf: "flex-start",
+                        background: "#f1f1f1",
+                        padding: 10,
+                        borderRadius: 10,
+                        maxWidth: "90%",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: entry.a }}
                     />
                   </div>
                 ))}
