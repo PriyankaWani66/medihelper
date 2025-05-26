@@ -9,6 +9,7 @@ export default function SummaryForm() {
   const [error, setError] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
 
   const handleTextSubmit = async (e) => {
     e.preventDefault();
@@ -18,6 +19,7 @@ export default function SummaryForm() {
     setError("");
     setSummary("");
     setAnswer("");
+    setChatHistory([]);
 
     try {
       const res = await fetch("/api/summarize-text", {
@@ -44,6 +46,7 @@ export default function SummaryForm() {
     setError("");
     setSummary("");
     setAnswer("");
+    setChatHistory([]);
 
     try {
       const form = new FormData();
@@ -75,6 +78,9 @@ export default function SummaryForm() {
       });
       const data = await res.json();
       setAnswer(data.answer);
+
+      setChatHistory((prev) => [...prev, { q: question, a: data.answer }]);
+      setQuestion("");
     } catch (err) {
       console.error(err);
       setAnswer("Sorry, couldn't answer that.");
@@ -83,7 +89,7 @@ export default function SummaryForm() {
 
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      {/* Mode Tabs */}
+      {/* Mode Toggle */}
       <div style={{ display: "flex", marginBottom: 16 }}>
         {["text", "file"].map((m) => (
           <button
@@ -93,6 +99,7 @@ export default function SummaryForm() {
               setSummary("");
               setAnswer("");
               setError("");
+              setChatHistory([]);
             }}
             style={{
               flex: 1,
@@ -110,7 +117,7 @@ export default function SummaryForm() {
         ))}
       </div>
 
-      {/* Form */}
+      {/* Input Form */}
       <form onSubmit={mode === "text" ? handleTextSubmit : handleFileSubmit}>
         {mode === "text" && (
           <textarea
@@ -122,7 +129,6 @@ export default function SummaryForm() {
             disabled={loading}
           />
         )}
-
         {mode === "file" && (
           <input
             type="file"
@@ -155,14 +161,15 @@ export default function SummaryForm() {
         </button>
       </form>
 
-      {/* Error */}
+      {/* Error Display */}
       {error && (
         <p style={{ color: "red", marginTop: 12 }}>{error}</p>
       )}
 
-      {/* Summary + Ask Question */}
+      {/* Summary and Q&A */}
       {summary && (
         <>
+          {/* Summary Block */}
           <div
             style={{
               marginTop: 20,
@@ -201,6 +208,7 @@ export default function SummaryForm() {
             >
               Ask Question
             </button>
+
             {answer && (
               <div
                 style={{
@@ -209,11 +217,32 @@ export default function SummaryForm() {
                   background: "#eef",
                   borderRadius: 4,
                 }}
-              >
-                <strong>Answer:</strong> {answer}
-              </div>
+                dangerouslySetInnerHTML={{ __html: `<strong>Answer:</strong> ${answer}` }}
+              />
             )}
           </div>
+
+          {/* Chat History */}
+          {chatHistory.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h4>🧠 Q&A History</h4>
+              <div style={{ padding: 12, background: "#f9f9f9", borderRadius: 4 }}>
+                {chatHistory.map((entry, idx) => (
+                  <div key={idx} style={{ marginBottom: 12 }}>
+                    <p style={{ margin: 0 }}>
+                      <strong>❓ You:</strong> {entry.q}
+                    </p>
+                    <div
+                      style={{ margin: "4px 0 0" }}
+                      dangerouslySetInnerHTML={{
+                        __html: `<strong>💬 AI:</strong> ${entry.a}`,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
