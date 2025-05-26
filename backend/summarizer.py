@@ -10,7 +10,7 @@ load_dotenv()
 def clean_summary(text: str) -> str:
     return re.sub(r"\*\*(.*?)\*\*", r"\1", text)
 
-def summarize_with_snowflake(text: str) -> str:
+def summarize_with_snowflake(text: str, target_lang: str = "English") -> str:
     """
     Summarizes the given clinical note using Snowflake Cortex COMPLETE().
     """
@@ -26,11 +26,15 @@ def summarize_with_snowflake(text: str) -> str:
 
     try:
         prompt = (
-            "Summarize this clinical note in simple language without using markdown or asterisks. "
-            "Present the output in plain text with clear section headings like 'Summary:', "
-            "'Medications:', 'Follow-up instructions:', and 'Risk factors:'.\n\n"
+            f"Summarize the following clinical note in simple language in {target_lang}. "
+            f"Write the response in native script if the language is not English. "
+            f"Translate the section headings into {target_lang} as well. Use headings like "
+            "'Summary:', 'Medications:', 'Follow-up instructions:', and 'Risk factors:', "
+            "but translated appropriately into the target language.\n\n"
             f"{text}"
         )
+
+
 
         query = f"""
         SELECT snowflake.cortex.complete(

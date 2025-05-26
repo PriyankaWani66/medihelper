@@ -10,6 +10,7 @@ export default function SummaryForm() {
   const [error, setError] = useState("");
   const [question, setQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [lang, setLang] = useState("English");
 
   const handleTextSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +25,7 @@ export default function SummaryForm() {
       const res = await fetch("/api/summarize-text", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note }),
+        body: JSON.stringify({ note, lang }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -48,6 +49,7 @@ export default function SummaryForm() {
     try {
       const form = new FormData();
       form.append("file", file);
+      form.append("lang", lang);
       const res = await fetch("/api/summarize-file", {
         method: "POST",
         body: form,
@@ -96,7 +98,7 @@ export default function SummaryForm() {
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
       <div style={{ display: "flex", marginBottom: 16 }}>
-        {"text" === mode || "file" === mode ? ["text", "file"].map((m) => (
+        {["text", "file"].map((m) => (
           <button
             key={m}
             onClick={() => {
@@ -118,10 +120,27 @@ export default function SummaryForm() {
           >
             {m === "text" ? "Text" : "File"}
           </button>
-        )) : null}
+        ))}
       </div>
 
       <form onSubmit={mode === "text" ? handleTextSubmit : handleFileSubmit}>
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="lang-select">Summary Language:</label>
+          <select
+            id="lang-select"
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            style={{ marginLeft: 8 }}
+          >
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Chinese">Chinese</option>
+          </select>
+        </div>
+
         {mode === "text" && (
           <textarea
             value={note}

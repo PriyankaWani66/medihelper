@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 router = APIRouter()
 
-@router.post("/api/transcribe-voice")
-async def transcribe_audio(audio: UploadFile = File(...)):
+@router.post("/api/transcribe-audio")
+async def transcribe_audio(audio: UploadFile = File(...), language: str = "en"):
     api_key = os.getenv("DEEPGRAM_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Deepgram API key not set.")
@@ -20,7 +20,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
     audio_bytes = await audio.read()
 
     response = requests.post(
-        "https://api.deepgram.com/v1/listen",
+        f"https://api.deepgram.com/v1/listen?language={language}",
         headers=headers,
         data=audio_bytes
     )
