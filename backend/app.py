@@ -5,8 +5,13 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from extractor import extract_text
 from summarizer import summarize_with_snowflake, ask_with_snowflake
+from voice_api import router as voice_router
+
+
 
 app = FastAPI(title="HealthSnap Summarizer API")
+
+app.include_router(voice_router)
 
 # Allow your React front-end to call these endpoints
 app.add_middleware(

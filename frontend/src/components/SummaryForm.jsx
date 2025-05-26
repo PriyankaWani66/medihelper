@@ -1,4 +1,5 @@
 import { useState } from "react";
+import VoiceRecorder from "./VoiceRecorder";
 
 export default function SummaryForm() {
   const [mode, setMode] = useState("text");
@@ -94,9 +95,8 @@ export default function SummaryForm() {
 
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      {/* Mode Tabs */}
       <div style={{ display: "flex", marginBottom: 16 }}>
-        {["text", "file"].map((m) => (
+        {"text" === mode || "file" === mode ? ["text", "file"].map((m) => (
           <button
             key={m}
             onClick={() => {
@@ -118,10 +118,9 @@ export default function SummaryForm() {
           >
             {m === "text" ? "Text" : "File"}
           </button>
-        ))}
+        )) : null}
       </div>
 
-      {/* Input Form */}
       <form onSubmit={mode === "text" ? handleTextSubmit : handleFileSubmit}>
         {mode === "text" && (
           <textarea
@@ -164,10 +163,8 @@ export default function SummaryForm() {
         </button>
       </form>
 
-      {/* Error Message */}
       {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
 
-      {/* Summary Display */}
       {summary && (
         <>
           <div
@@ -184,7 +181,6 @@ export default function SummaryForm() {
             {summary}
           </div>
 
-          {/* Ask Question */}
           <div style={{ marginTop: 20 }}>
             <input
               type="text"
@@ -194,6 +190,7 @@ export default function SummaryForm() {
               style={{ width: "100%", padding: 8, marginBottom: 8 }}
               disabled={loading}
             />
+            <VoiceRecorder onTranscript={(text) => setQuestion(text)} />
             <button
               onClick={handleAsk}
               disabled={loading || !question.trim()}
@@ -204,13 +201,13 @@ export default function SummaryForm() {
                 color: "white",
                 border: "none",
                 borderRadius: 4,
+                marginTop: 10,
               }}
             >
               Ask Question
             </button>
           </div>
 
-          {/* Chat History */}
           {chatHistory.length > 0 && (
             <div style={{ marginTop: 24 }}>
               <h4>🧠 Q&A Chat</h4>
