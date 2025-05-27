@@ -8,7 +8,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def clean_summary(text: str) -> str:
+    """Remove markdown-like bold markers from summary."""
     return re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+
+def build_multilingual_prompt(text: str, target_lang: str) -> str:
+    if target_lang.lower() == "hindi":
+        return (
+            f"निम्नलिखित चिकित्सा नोट को सरल, रोगी-अनुकूल हिंदी में संक्षेप करें। "
+            f"सभी अनुभाग शीर्षकों और सामग्री को देवनागरी लिपि में अनुवादित करें।\n\n{text}"
+        )
+    elif target_lang.lower() == "spanish":
+        return (
+            f"Escribe un resumen de la siguiente nota clínica utilizando un lenguaje sencillo y comprensible para el paciente. "
+            f"Asegúrate de traducir todos los títulos y secciones al español. Responde solo en español.\n\n{text}"
+        )
+    elif target_lang.lower() == "french":
+        return (
+            f"Rédigez un résumé de la note clinique suivante en utilisant un langage clair et facile à comprendre pour le patient. "
+            f"Veuillez traduire tous les titres et sections en français. Répondez uniquement en français.\n\n{text}"
+        )
+    else:
+        return (
+            f"Summarize the following clinical note in simple, patient-friendly English. "
+            f"Translate all section headings and content into {target_lang}.\n\n{text}"
+        )
+
+
 
 def summarize_with_snowflake(text: str, target_lang: str = "English") -> str:
     """
@@ -25,13 +50,7 @@ def summarize_with_snowflake(text: str, target_lang: str = "English") -> str:
     cursor = conn.cursor()
 
     try:
-
-        prompt = (
-            f"Summarize the following clinical note in simple, patient-friendly language. "
-            f"Translate both the summary and section headings into {target_lang}.\n\n"
-            f"{text}"
-        )
-
+        prompt = build_multilingual_prompt(text, target_lang)
 
         query = f"""
         SELECT snowflake.cortex.complete(
@@ -66,14 +85,12 @@ def search_google_fallback(query: str) -> str:
         res = requests.get("https://serpapi.com/search", params=params)
         results = res.json()
 
-        # Extract snippet
         snippet = ""
         if "answer_box" in results and "snippet" in results["answer_box"]:
             snippet = results["answer_box"]["snippet"]
         elif "organic_results" in results and results["organic_results"]:
             snippet = results["organic_results"][0].get("snippet", "")
 
-        # Build top 3 links as HTML
         links = []
         for result in results.get("organic_results", [])[:3]:
             title = result.get("title", "Link")
@@ -90,7 +107,6 @@ def search_google_fallback(query: str) -> str:
     except Exception as e:
         print("SerpAPI fallback failed:", e)
         return "Google search failed."
-
 
 def ask_with_snowflake(note: str, question: str) -> str:
     """
@@ -128,7 +144,6 @@ def ask_with_snowflake(note: str, question: str) -> str:
         row = cursor.fetchone()
         answer = row[0].strip() if row and row[0] else ""
 
-        # Fallback detection
         bad_phrases = [
             "webmd", "check online", "i'm not sure",
             "consult your doctor", "not provided", "not mentioned",
