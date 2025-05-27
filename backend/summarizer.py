@@ -25,15 +25,12 @@ def summarize_with_snowflake(text: str, target_lang: str = "English") -> str:
     cursor = conn.cursor()
 
     try:
+
         prompt = (
-            f"Summarize the following clinical note in simple language in {target_lang}. "
-            f"Write the response in native script if the language is not English. "
-            f"Translate the section headings into {target_lang} as well. Use headings like "
-            "'Summary:', 'Medications:', 'Follow-up instructions:', and 'Risk factors:', "
-            "but translated appropriately into the target language.\n\n"
+            f"Summarize the following clinical note in simple, patient-friendly language. "
+            f"Translate both the summary and section headings into {target_lang}.\n\n"
             f"{text}"
         )
-
 
 
         query = f"""

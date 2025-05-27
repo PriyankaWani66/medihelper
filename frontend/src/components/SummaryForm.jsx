@@ -1,5 +1,7 @@
 import { useState } from "react";
 import VoiceRecorder from "./VoiceRecorder";
+import { extractFollowUps } from "../utils/extractFollowUps";
+import { generateCalendarLink } from "../utils/generateCalendarLink";
 
 export default function SummaryForm() {
   const [mode, setMode] = useState("text");
@@ -11,6 +13,7 @@ export default function SummaryForm() {
   const [question, setQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [lang, setLang] = useState("English");
+  const [reminders, setReminders] = useState([]);
 
   const handleTextSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +33,7 @@ export default function SummaryForm() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setSummary(data.summary);
+      setReminders(extractFollowUps(data.summary));
     } catch (err) {
       setError(err.message || "Unknown error");
     } finally {
@@ -57,6 +61,7 @@ export default function SummaryForm() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setSummary(data.summary);
+      setReminders(extractFollowUps(data.summary));
     } catch (err) {
       setError(err.message || "Unknown error");
     } finally {
@@ -106,6 +111,7 @@ export default function SummaryForm() {
               setSummary("");
               setError("");
               setChatHistory([]);
+              setReminders([]);
             }}
             style={{
               flex: 1,
@@ -199,6 +205,43 @@ export default function SummaryForm() {
             <h3 style={{ marginTop: 0 }}>Summary</h3>
             {summary}
           </div>
+
+          {reminders.length > 0 && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: 16,
+                background: "#fff3cd",
+                border: "1px solid #ffeeba",
+                borderRadius: 4,
+              }}
+            >
+              <h4>📅 Follow-up Reminders</h4>
+              <ul>
+                {reminders.map((r, i) => (
+                  <li key={i} style={{ marginBottom: 8 }}>
+                    {r}
+                    <a
+                      href={generateCalendarLink(r)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        marginLeft: 12,
+                        fontSize: 12,
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        textDecoration: "none",
+                      }}
+                    >
+                      📅 Add to Google Calendar
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div style={{ marginTop: 20 }}>
             <input
