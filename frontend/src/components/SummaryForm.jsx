@@ -33,7 +33,7 @@ export default function SummaryForm() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setSummary(data.summary);
-      setReminders(extractFollowUps(data.summary));
+      setReminders(extractFollowUps(note, lang)); // extract from original input
     } catch (err) {
       setError(err.message || "Unknown error");
     } finally {
@@ -61,7 +61,7 @@ export default function SummaryForm() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setSummary(data.summary);
-      setReminders(extractFollowUps(data.summary));
+      setReminders(extractFollowUps(note, lang)); // extract from original input
     } catch (err) {
       setError(err.message || "Unknown error");
     } finally {
