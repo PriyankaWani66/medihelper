@@ -70,28 +70,48 @@ Setup Instructions
 
 
 📁 Project Structure
+```
 medihelper/
-├── backend/
-│   ├── app.py               # FastAPI backend logic
-│   ├── summarizer.py        # Handles summarization using LLM
-│   ├── extractor.py         # Extracts follow-up and structured data
-│   ├── voice_api.py         # Handles Deepgram audio processing
-│   ├── test_summary.py      # Unit tests for summary module
-│   └── .env                 # Environment secrets
-
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # React components like SummaryForm, VoiceRecorder
-│   │   └── utils/            # Calendar link and follow-up helpers
-│   ├── package.json          # Frontend dependencies
-│   └── vite.config.js        # Vite configuration
-
-├── screenshots/              # UI screenshots for documentation
-├── README.md                 # Markdown documentation
+├── 📂 backend/
+│   ├── 🐍 app.py               # FastAPI application entry point
+│   ├── 🧠 summarizer.py        # AI-powered text summarization
+│   ├── 📊 extractor.py         # Data extraction and structuring
+│   ├── 🎙️ voice_api.py         # Voice processing with Deepgram
+│   ├── 🧪 test_summary.py      # Unit tests for summary module
+│   ├── 📋 requirements.txt     # Python dependencies
+│   └── 🔐 .env                 # Environment variables
+├── 📂 frontend/
+│   ├── 📂 src/
+│   │   ├── 📂 components/      # React components
+│   │   │   ├── 📝 SummaryForm.jsx
+│   │   │   ├── 🎤 VoiceRecorder.jsx
+│   │   │   └── 📅 CalendarIntegration.jsx
+│   │   └── 📂 utils/           # Helper functions
+│   ├── 📦 package.json         # Node.js dependencies
+│   └── ⚙️ vite.config.js       # Vite configuration
+├── 📸 screenshots/             # Documentation images
+├── 📖 README.md               # Project documentation
+└── 📄 LICENSE                 # License information
+```
 
 Future Improvements
-Personalized Preventive Care Alerts
-   Use patient history + AI to predict and nudge patients toward preventive checkups or screenings before problems escalate
+- Personalized Preventive Care Alerts
+  - AI-driven patient history analysis
+  - Predictive healthcare recommendations
+  - Automated screening reminders
+  - Risk stratification algorithms
 
+- Enhanced Patient Portal Integration
+  - Connect with existing patient portals and EHR systems
+  - Import and organize existing health records
+  - Seamless data synchronization across platforms
 
+- Health Goal Tracking
+  - Set and monitor personal health objectives
+  - Track medication adherence and lifestyle changes
+  - Progress visualization and achievement rewards
 
+- Family Health Management
+  - Manage health information for family members
+  - Shared calendars for family medical appointments
+  - Emergency health information access
